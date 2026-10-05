@@ -35,19 +35,19 @@
         "startMinimized": "Start minimized",
         "stepExecutable": "If the plugin is missing, click the folder icon and select the game's executable folder:",
         "stepNetwork": "Ensure your phone is connected to the same network as your PC.",
-        "stepOpenApp": "Open the TruckNav app or web browser using the IP address below.",
+        "stepOpenApp": "Open Port2You DriverNav or a web browser using the IP address below.",
         "stepRunning": "Make sure ETS2 / ATS is running on your PC.",
-        "subtitle": "Below you'll find instructions to set up the app on your phone.",
+        "subtitle": "Port2You navigation and telemetry for ETS2 / ATS.",
         "telemetryRunning": "Telemetry is running.",
         "telemetryRunningSuffix": "this window to keep the GPS active.",
-        "title": "Welcome to TruckNav!",
-        "truckingCompanion": "Your Trucking Companion",
+        "title": "Welcome to Port2You DriverNav!",
+        "truckingCompanion": "Port2You Driver Companion",
         "troubleshoot": "If you're using a cracked version or a repack, the plugin may show as 'Missing' even after setup"
     },
     "input": {
         "bridgeNotReachable": "Bridge not reachable",
         "couldNotConnect": "Could not connect...",
-        "description": "Enter the IP shown in TruckNav from your computer",
+        "description": "Enter the IP shown in Port2You DriverNav on your computer",
         "ipAddress": "IP Address:",
         "missingValue": "Please input a value.",
         "placeholder": "Type here..."
@@ -59,7 +59,7 @@
         "tappingEnabled": "Tapping Enabled"
     },
     "mobile": {
-        "pairWithComputer": "Pair with Computer"
+        "pairWithComputer": "Connect to DriverNav"
     },
     "notifications": {
         "locatingRoute": "Locating Route",

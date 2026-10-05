@@ -42,8 +42,8 @@ export interface AppSettingsState {
 }
 
 const DEFAULT_PROFILE: GameProfile = {
-    themeColor: "#fbc02d",
-    textColor: "light",
+    themeColor: "#173b67",
+    textColor: "dark",
     routeColor: "#22d3ee",
     roadColor: "#4a5f7a",
     backgroundColor: "#24467b",
@@ -87,7 +87,7 @@ const DEFAULT_SETTINGS: AppSettingsState = {
     locale: "en",
 };
 
-const STORAGE_KEY = "truck-nav-settings";
+const STORAGE_KEY = "port2you-driver-nav-settings";
 
 export const useSettings = () => {
     const settings = useState<AppSettingsState>("app-settings", () => ({

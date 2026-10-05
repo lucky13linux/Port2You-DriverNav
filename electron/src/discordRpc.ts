@@ -9,10 +9,8 @@ export interface DiscordRpcPayload {
     truckName?: string;
 }
 
-// Enter your Discord application client ID here to enable Rich Presence integration.
-// For now we use TruckNav's RPC ID, If not set, RPC features will be disabled.
-const DISCORD_CLIENT_ID = "1401296138186788865";
-const ROTATE_INTERVAL_MS = 10_000;
+// Port2You Discord application used for Rich Presence.
+const DISCORD_CLIENT_ID = "1556721952469557319";
 const RPC_SHUTDOWN_WAIT_MS = 1_500;
 
 let rpcLib: any = null;
@@ -184,14 +182,14 @@ async function setIdlePresence() {
     if (!rpcClient || !rpcReady) return;
 
     await rpcClient.setActivity({
-        details: "TruckNav",
+        details: "Driving for Port2You",
         state: "Waiting for telemetry",
-        largeImageText: "TruckNav",
+        largeImageText: "Port2You",
         instance: false,
     });
 
     lastPayloadKey = JSON.stringify({
-        details: "TruckNav",
+        details: "Driving for Port2You",
         state: "Waiting for telemetry",
     });
 }
@@ -213,47 +211,31 @@ async function pushCurrentPresence() {
 }
 
 function buildPresence(payload: DiscordRpcPayload) {
-    const isAts = payload.game?.toLowerCase() === "ats";
-    const gameName = isAts
-        ? "American Truck Simulator"
-        : "Euro Truck Simulator 2";
+    const fromCity = cleanLocation(payload.sourceCity);
+    const toCity = cleanLocation(payload.destinationCity);
 
-    const details = `Playing: ${gameName}`;
-    const truckLabel = getTruckLabel(payload);
-    const useTruckState =
-        payload.connected &&
-        payload.hasActiveJob &&
-        !!truckLabel &&
-        sessionStartedAt > 0 &&
-        Math.floor((Date.now() - sessionStartedAt) / ROTATE_INTERVAL_MS) % 2 ===
-            1;
-    let state = payload.connected ? "Cruising" : "Waiting for telemetry";
+    let state = payload.connected ? "On the road" : "Waiting for telemetry";
 
     if (payload.connected && payload.hasActiveJob) {
-        const fromCity = cleanLocation(payload.sourceCity);
-        const toCity = cleanLocation(payload.destinationCity);
-
-        if (useTruckState && truckLabel) {
-            state = `Truck: ${truckLabel}`;
-        } else if (fromCity && toCity) {
-            state = `Job: ${fromCity} to ${toCity}`;
+        if (fromCity && toCity) {
+            state = `${fromCity} → ${toCity}`;
         } else if (toCity) {
-            state = `Job: Delivering to ${toCity}`;
+            state = `Delivering to ${toCity}`;
         } else if (payload.cargoName) {
-            state = `Job: ${payload.cargoName}`;
+            state = payload.cargoName;
         } else {
             state = "Job in progress";
         }
     }
 
     return {
-        details,
+        details: "Driving for Port2You",
         state,
-        largeImageText: "TruckNav",
+        largeImageText: "Port2You",
         buttons: [
             {
-                label: "Get it on GitHub",
-                url: "https://github.com/Rares-Muntean/TruckNav-Sim",
+                label: "Port2You DriverNav",
+                url: "https://github.com/lucky13linux/Port2You-DriverNav",
             },
         ],
         startTimestamp:
@@ -262,14 +244,6 @@ function buildPresence(payload: DiscordRpcPayload) {
                 : undefined,
         instance: false,
     };
-}
-
-function getTruckLabel(payload: DiscordRpcPayload) {
-    const brand = cleanLocation(payload.truckBrand);
-    const name = cleanLocation(payload.truckName);
-
-    if (brand && name) return `${brand} ${name}`;
-    return brand || name || "";
 }
 
 function cleanLocation(value?: string) {

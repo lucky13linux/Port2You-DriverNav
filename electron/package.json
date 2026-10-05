@@ -1,17 +1,16 @@
 {
-    "name": "truck-nav",
-    "productName": "TruckNav",
+    "name": "port2you-driver-nav",
+    "productName": "Port2You DriverNav",
     "version": "0.5.0",
-    "description": "Real-time GPS navigation route advisor for ETS2. Second monitor map with live tracking and routing.",
+    "description": "Port2You DriverNav - navigation, telemetry and driver tools for ETS2 and ATS.",
     "author": {
-        "name": "RaresMuntean",
-        "email": "rares_famuntean@yahoo.com"
+        "name": "Port2You"
     },
     "repository": {
         "type": "git",
-        "url": ""
+        "url": "https://github.com/lucky13linux/Port2You-DriverNav"
     },
-    "license": "MIT",
+    "license": "GPL-3.0",
     "main": "build/src/index.js",
     "scripts": {
         "build": "tsc && electron-rebuild",
@@ -44,6 +43,10 @@
     },
     "keywords": [
         "capacitor",
-        "electron"
+        "electron",
+        "port2you",
+        "ets2",
+        "ats",
+        "navigation"
     ]
 }

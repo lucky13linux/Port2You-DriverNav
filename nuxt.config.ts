@@ -30,7 +30,7 @@ export default defineNuxtConfig({
 
     app: {
         head: {
-            title: "TruckNav",
+            title: "Port2You DriverNav",
             meta: [
                 {
                     name: "viewport",
