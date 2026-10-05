@@ -99,7 +99,7 @@ const toggleRemoteGpsWindow = () => {
                     size="30"
                     @click.prevent="
                         openLink(
-                            'https://github.com/Rares-Muntean/ets2-navigation-gps',
+                            'https://github.com/lucky13linux/Port2You-DriverNav',
                         )
                     "
                 />
@@ -178,7 +178,7 @@ const toggleRemoteGpsWindow = () => {
             <div class="bottom-info">
                 <div class="status-div">
                     <div class="status">
-                        <p>TruckNavTelemetry.exe: &nbsp;</p>
+                        <p>DriverNav Telemetry: &nbsp;</p>
                         <span
                             :class="
                                 isServerRunning ? 'connected' : 'disconnected'
