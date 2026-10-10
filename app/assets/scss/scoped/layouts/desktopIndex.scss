@@ -1,5 +1,13 @@
 .section-device-info {
     width: 900px;
+    max-width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 24px;
+    scrollbar-width: thin;
+    scrollbar-color: #64748b transparent;
 
     color: $white-font-text;
     display: flex;
