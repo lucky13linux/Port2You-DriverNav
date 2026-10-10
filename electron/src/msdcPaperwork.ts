@@ -19,6 +19,9 @@ let lastCheck = "Never";
 let lastAttempt = "Never";
 let lastError = "";
 let eligibleCount = 0;
+let scanReason = "Not scanned";
+let dispatchCount = 0;
+let recordCount = 0;
 
 function readJson<T>(file: string, fallback: T): T {
     try { return JSON.parse(readFileSync(file, "utf8")) as T; }
@@ -48,7 +51,7 @@ export function paperworkStatus() {
         configured: Boolean(c.endpoint && c.driverToken),
         msdcDetected: existsSync(historyPath()),
         sentCount: readJson<State>(statePath(), { sent: [] }).sent.length,
-        eligibleCount, lastCheck, lastAttempt, lastError
+        eligibleCount, dispatchCount, recordCount, scanReason, lastCheck, lastAttempt, lastError
     };
 }
 function request(endpoint: string, token: string, event: unknown): Promise<void> {
@@ -80,16 +83,30 @@ export async function scanPaperworkHistory(): Promise<void> {
     busy = true;
     lastCheck = new Date().toISOString();
     eligibleCount = 0;
+    dispatchCount = 0;
+    recordCount = 0;
     try {
         const config = getPaperworkConfig();
-        if (!config.enabled || !config.endpoint || !config.driverToken || !existsSync(historyPath())) return;
-        const history = readJson<Job[]>(historyPath(), []);
-        if (!Array.isArray(history)) return;
+        if (!config.enabled) { scanReason = "Uploads disabled in saved configuration"; return; }
+        if (!config.endpoint) { scanReason = "Endpoint not configured"; return; }
+        if (!config.driverToken) { scanReason = "Driver token missing"; return; }
+        if (!existsSync(historyPath())) { scanReason = "MSDC history file not found"; return; }
+        let history: Job[];
+        try {
+            history = JSON.parse(readFileSync(historyPath(), "utf8"));
+        } catch (e) {
+            scanReason = "History JSON could not be read or parsed";
+            return;
+        }
+        if (!Array.isArray(history)) { scanReason = "History JSON is not an array"; return; }
+        dispatchCount = history.length;
+        scanReason = "History parsed";
         const state = readJson<State>(statePath(), { sent: [] });
         const sent = new Set(Array.isArray(state.sent) ? state.sent : []);
         // All retained records are scanned, including separate completions of reused Trucky IDs.
         for (const dispatch of history) {
             if (!Array.isArray(dispatch.BolRecords)) continue;
+            recordCount += dispatch.BolRecords.length;
             for (const bol of dispatch.BolRecords) {
                 if (!bol.Completed || !bol.CompletedAtUtc) continue;
                 eligibleCount += 1;
@@ -119,8 +136,10 @@ export async function scanPaperworkHistory(): Promise<void> {
                 writeFileSync(statePath(), JSON.stringify({ sent: [...sent] }, null, 2));
             }
         }
+        scanReason = eligibleCount ? "Eligible records found" : "No completed BOL records in history";
     } catch (error) {
         lastError = error instanceof Error ? error.message : "Unknown paperwork error";
+        scanReason = "Scan or upload failed";
         console.warn("[Paperwork] Delivery upload pending retry:", lastError);
     } finally {
         busy = false;
