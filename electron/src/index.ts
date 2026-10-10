@@ -38,6 +38,7 @@ import {
     setDiscordRpcEnabled,
     updateDiscordRpc,
 } from "./discordRpc";
+import { startPaperworkMonitor, stopPaperworkMonitor, paperworkStatus, getPaperworkConfig, setPaperworkConfig, scanPaperworkHistory } from "./msdcPaperwork";
 import axios from "axios";
 import extract from "extract-zip";
 
@@ -147,6 +148,7 @@ if (!gotTheLock) {
             await app.whenReady();
 
             startTelemetryServer();
+            startPaperworkMonitor();
             startWebServer();
             setupContentSecurityPolicy(myCapacitorApp.getCustomURLScheme());
             if (appSettings.rpcEnabled) {
@@ -191,6 +193,7 @@ app.on("before-quit", function (event) {
         isQuittingForRpcCleanup = true;
         (app as any).isQuitting = true;
         killTelemetry();
+        stopPaperworkMonitor();
 
         destroyDiscordRpc()
             .catch(() => {})
@@ -488,6 +491,10 @@ async function getAvailablePort(startingPort: number): Promise<number> {
 /**
  * Ipc Handlers
  */
+ipcMain.handle("get-paperwork-status", () => paperworkStatus());
+ipcMain.handle("get-paperwork-config", () => { const { driverToken, ...safe } = getPaperworkConfig(); return { ...safe, hasToken: Boolean(driverToken) }; });
+ipcMain.handle("update-paperwork-config", (_event, input) => { const next = setPaperworkConfig(input); void scanPaperworkHistory(); const { driverToken, ...safe } = next; return { ...safe, hasToken: Boolean(driverToken) }; });
+
 ipcMain.handle("get-settings", () => {
     return getSettings();
 });
