@@ -5,6 +5,7 @@ const status = ref<any>(null);
 const hasToken = ref(false);
 const message = ref("");
 const busy = ref(false);
+let refreshTimer: ReturnType<typeof setInterval> | undefined;
 onMounted(async () => {
     try {
         const config = await api().getPaperworkConfig();
@@ -13,8 +14,12 @@ onMounted(async () => {
         form.driverName = config.driverName || "";
         hasToken.value = !!config.hasToken;
         status.value = await api().getPaperworkStatus();
+        refreshTimer = setInterval(async () => {
+            try { status.value = await api().getPaperworkStatus(); } catch {}
+        }, 5000);
     } catch { message.value = "Paperwork service unavailable."; }
 });
+onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer); });
 async function save() {
     busy.value = true;
     message.value = "";
@@ -35,7 +40,9 @@ async function save() {
     <section class="paperwork-panel">
         <h3>Port2You delivery paperwork</h3>
         <p>Automatically send MSDC completed deliveries to Port2You's secure dispatch server. Disabled until configured.</p>
-        <p v-if="status">MSDC history: <strong>{{ status.msdcDetected ? "Detected" : "Not found" }}</strong> · Submitted locally: {{ status.sentCount }}</p>
+        <p v-if="status">MSDC history: <strong>{{ status.msdcDetected ? "Detected" : "Not found" }}</strong> · Eligible records: {{ status.eligibleCount }} · Submitted locally: {{ status.sentCount }}</p>
+        <p v-if="status">Last scan: {{ status.lastCheck }} · Last upload attempt: {{ status.lastAttempt }}</p>
+        <p v-if="status?.lastError" role="alert" class="paperwork-error">Upload error: {{ status.lastError }}</p>
         <label>Oracle HTTPS paperwork endpoint
             <input v-model="form.endpoint" type="url" placeholder="https://your-host/api/paperwork" />
         </label>
@@ -56,5 +63,6 @@ async function save() {
 .paperwork-panel input:not([type="checkbox"]) { box-sizing: border-box; display: block; width: 100%; margin-top: 4px; padding: 8px; border: 1px solid #52637a; border-radius: 5px; background: #0c1522; color: white; }
 .paperwork-panel .toggle { display: flex; align-items: center; gap: 8px; }
 .paperwork-panel button { padding: 8px 14px; background: #196a8b; border-radius: 5px; color: white; cursor: pointer; }
+.paperwork-panel .paperwork-error { color: #ffb0ad; font-weight: 700; }
 .paperwork-panel small { display: block; margin-top: 8px; color: #b9c7d8; }
 </style>
