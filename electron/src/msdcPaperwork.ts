@@ -15,6 +15,10 @@ const statePath = () => path.join(dataDir(), "paperwork-sent.json");
 const defaults: Config = { enabled: false, endpoint: "", driverToken: "", driverName: "" };
 let timer: NodeJS.Timeout | undefined;
 let busy = false;
+let lastCheck = "Never";
+let lastAttempt = "Never";
+let lastError = "";
+let eligibleCount = 0;
 
 function readJson<T>(file: string, fallback: T): T {
     try { return JSON.parse(readFileSync(file, "utf8")) as T; }
@@ -43,7 +47,8 @@ export function paperworkStatus() {
         enabled: c.enabled,
         configured: Boolean(c.endpoint && c.driverToken),
         msdcDetected: existsSync(historyPath()),
-        sentCount: readJson<State>(statePath(), { sent: [] }).sent.length
+        sentCount: readJson<State>(statePath(), { sent: [] }).sent.length,
+        eligibleCount, lastCheck, lastAttempt, lastError
     };
 }
 function request(endpoint: string, token: string, event: unknown): Promise<void> {
@@ -73,6 +78,8 @@ function request(endpoint: string, token: string, event: unknown): Promise<void>
 export async function scanPaperworkHistory(): Promise<void> {
     if (busy) return;
     busy = true;
+    lastCheck = new Date().toISOString();
+    eligibleCount = 0;
     try {
         const config = getPaperworkConfig();
         if (!config.enabled || !config.endpoint || !config.driverToken || !existsSync(historyPath())) return;
@@ -85,6 +92,7 @@ export async function scanPaperworkHistory(): Promise<void> {
             if (!Array.isArray(dispatch.BolRecords)) continue;
             for (const bol of dispatch.BolRecords) {
                 if (!bol.Completed || !bol.CompletedAtUtc) continue;
+                eligibleCount += 1;
                 const identity = [dispatch.JobsListId, bol.LegUniqueId, bol.LegNumber, bol.StartedAtUtc, bol.CompletedAtUtc].join("|");
                 const eventId = createHash("sha256").update(identity).digest("hex");
                 if (sent.has(eventId)) continue;
@@ -102,13 +110,18 @@ export async function scanPaperworkHistory(): Promise<void> {
                     startedAtUtc: bol.StartedAtUtc, completedAtUtc: bol.CompletedAtUtc,
                     completionMethod: bol.CompletionMethod
                 };
+                lastAttempt = new Date().toISOString();
+                lastError = "";
+                console.info("[Paperwork] Submitting completed job", bol.LegUniqueId);
                 await request(config.endpoint, config.driverToken, event);
+                console.info("[Paperwork] Upload accepted", bol.LegUniqueId);
                 sent.add(eventId);
                 writeFileSync(statePath(), JSON.stringify({ sent: [...sent] }, null, 2));
             }
         }
     } catch (error) {
-        console.warn("[Paperwork] Delivery upload pending retry:", error);
+        lastError = error instanceof Error ? error.message : "Unknown paperwork error";
+        console.warn("[Paperwork] Delivery upload pending retry:", lastError);
     } finally {
         busy = false;
     }
