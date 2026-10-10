@@ -66,7 +66,7 @@ def discord_post(event, driver):
     )
     body = pdf_for(event, driver)
     boundary = "p2y" + hashlib.sha256(body).hexdigest()[:20]
-    metadata = json.dumps({"content": summary}).encode()
+    metadata = json.dumps({"content": summary, "allowed_mentions": {"parse": []}}).encode()
     payload = (
         f"--{boundary}\r\nContent-Disposition: form-data; name=\"payload_json\"\r\nContent-Type: application/json\r\n\r\n".encode()
         + metadata + f"\r\n--{boundary}\r\nContent-Disposition: form-data; name=\"files[0]\"; filename=\"Port2You-BOL.pdf\"\r\nContent-Type: application/pdf\r\n\r\n".encode()
@@ -103,6 +103,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_error(503)
                 return
             with db() as conn:
+                conn.execute("BEGIN IMMEDIATE")
                 if conn.execute("SELECT 1 FROM processed WHERE event_id=?", (x["eventId"],)).fetchone():
                     self.send_response(200)
                     self.end_headers()
