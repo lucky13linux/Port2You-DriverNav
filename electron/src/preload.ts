@@ -33,6 +33,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
         ipcRenderer.send("update-discord-rpc", payload),
     clearDiscordRpc: () => ipcRenderer.send("clear-discord-rpc"),
 
+    getPaperworkStatus: () => ipcRenderer.invoke("get-paperwork-status"),
+    getPaperworkConfig: () => ipcRenderer.invoke("get-paperwork-config"),
+    updatePaperworkConfig: (input: { enabled?: boolean; endpoint?: string; driverToken?: string; driverName?: string }) => ipcRenderer.invoke("update-paperwork-config", input),
     getSettings: () => ipcRenderer.invoke("get-settings"),
     updateSetting: (key: keyof AppSettings, value: any) =>
         ipcRenderer.invoke("update-setting", key, value),

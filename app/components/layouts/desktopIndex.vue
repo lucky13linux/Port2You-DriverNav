@@ -288,6 +288,8 @@ const toggleRemoteGpsWindow = () => {
             </Transition>
         </div>
 
+        <PaperworkSettings />
+
         <div class="troubleshoot">
             <InfoBox type="note">
                 <template #content
