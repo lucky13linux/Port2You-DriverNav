@@ -42,6 +42,7 @@ async function save() {
         <p>Automatically send MSDC completed deliveries to Port2You's secure dispatch server. Disabled until configured.</p>
         <p v-if="status">MSDC history: <strong>{{ status.msdcDetected ? "Detected" : "Not found" }}</strong> · Eligible records: {{ status.eligibleCount }} · Submitted locally: {{ status.sentCount }}</p>
         <p v-if="status">Last scan: {{ status.lastCheck }} · Last upload attempt: {{ status.lastAttempt }}</p>
+        <p v-if="status">Scan: {{ status.scanReason }} · Dispatches: {{ status.dispatchCount }} · BOL records: {{ status.recordCount }} · Configured: {{ status.configured ? "Yes" : "No" }}</p>
         <p v-if="status?.lastError" role="alert" class="paperwork-error">Upload error: {{ status.lastError }}</p>
         <label>Oracle HTTPS paperwork endpoint
             <input v-model="form.endpoint" type="url" placeholder="https://your-host/api/paperwork" />
