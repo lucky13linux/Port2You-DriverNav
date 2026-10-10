@@ -60,17 +60,17 @@ def pdf_for(x, driver):
     return out.getvalue()
 
 def discord_post(event, driver):
-    summary = f"🚛 **{driver} delivered:** {event['origin']['city']} → {event['destination']['city']}\\n" + (
-        f"**Cargo:** {event.get('cargo','Unknown')} · **Truck:** {event.get('truck','Unknown')}\\n"
+    summary = f"🚛 **{driver} delivered:** {event['origin']['city']} → {event['destination']['city']}\n" + (
+        f"**Cargo:** {event.get('cargo','Unknown')} · **Truck:** {event.get('truck','Unknown')}\n"
         f"**Dispatch:** {event.get('dispatchId','')} · **Job:** {event.get('jobId','')}"
     )
     body = pdf_for(event, driver)
     boundary = "p2y" + hashlib.sha256(body).hexdigest()[:20]
     metadata = json.dumps({"content": summary}).encode()
     payload = (
-        f"--{boundary}\\r\\nContent-Disposition: form-data; name=\"payload_json\"\\r\\nContent-Type: application/json\\r\\n\\r\\n".encode()
-        + metadata + f"\\r\\n--{boundary}\\r\\nContent-Disposition: form-data; name=\"files[0]\"; filename=\"Port2You-BOL.pdf\"\\r\\nContent-Type: application/pdf\\r\\n\\r\\n".encode()
-        + body + f"\\r\\n--{boundary}--\\r\\n".encode()
+        f"--{boundary}\r\nContent-Disposition: form-data; name=\"payload_json\"\r\nContent-Type: application/json\r\n\r\n".encode()
+        + metadata + f"\r\n--{boundary}\r\nContent-Disposition: form-data; name=\"files[0]\"; filename=\"Port2You-BOL.pdf\"\r\nContent-Type: application/pdf\r\n\r\n".encode()
+        + body + f"\r\n--{boundary}--\r\n".encode()
     )
     req = urllib.request.Request(WEBHOOK, data=payload, headers={"Content-Type": f"multipart/form-data; boundary={boundary}", "User-Agent": "Port2You-Paperwork/1.0"}, method="POST")
     with urllib.request.urlopen(req, timeout=20) as res:
