@@ -93,7 +93,7 @@ export async function scanPaperworkHistory(): Promise<void> {
         if (!existsSync(historyPath())) { scanReason = "MSDC history file not found"; return; }
         let history: Job[];
         try {
-            history = JSON.parse(readFileSync(historyPath(), "utf8"));
+            history = JSON.parse(readFileSync(historyPath(), "utf8").replace(/^\uFEFF/, ""));
         } catch (e) {
             scanReason = "History JSON could not be read or parsed";
             return;
